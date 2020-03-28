@@ -17,7 +17,7 @@ class reversi {
     public:
 
     reversi();
-    reversi(int);
+    //reversi(int);
     
     std::vector<std::pair<int,int>> possible_moves();
     bool game_done();
@@ -35,27 +35,29 @@ class reversi {
 
 reversi::reversi(){ 
 
-        cout << "here";
-        vector<int> row = {0,0,0,0,0,0,0,0};
-        for(int j = 0; j < 8; j++){
-            board.push_back(row);
-        }
+    //8 x 8 matrix of zeros
+    vector<int> row = {0,0,0,0,0,0,0,0};
+    for(int j = 0; j < 8; j++){
+        board.push_back(row);
+    }
 
-        board[3][3] = 1;
-        board[4][4] = 1;
-        board[3][4] = 2;
-        board[4][3] = 2;
-        cout << "leaving "<<endl;
-}
-
-
-reversi::reversi(int turn_){ 
-
-    reversi();
-    turn = turn_;
+    //standard starting board
+    board[3][3] = 1;
+    board[4][4] = 1;
+    board[3][4] = 2;
+    board[4][3] = 2;
 
 }
 
+
+// reversi::reversi(int turn_){ 
+
+//     reversi();
+//     turn = turn_;
+
+// }
+
+//pritns board
 void reversi::print(){
 
     for (int i = 0; i < 8; i++){
@@ -86,9 +88,10 @@ void reversi::print(){
     cout << "  ";
     for (int i = 0; i < 8; i++){
         cout << i << " ";
-    } cout << endl;
+    } cout << endl << endl;
 }
 
+//returns vector of possible moves, (y,x)
  std::vector<std::pair<int,int>> reversi::possible_moves(){
     std::vector<std::pair<int,int>> moves;
     for (int i = 0; i < 8; i++){
@@ -102,6 +105,8 @@ void reversi::print(){
     return moves;
  }
 
+//skips turn
+//assert: no moves for current player
  void reversi::skip_turn(){
     std::vector<std::pair<int,int>> moves = possible_moves();
     assert(moves.size()==0);
@@ -110,6 +115,8 @@ void reversi::print(){
 
  }
 
+//makes move and updates board
+//assert: valid move
  void reversi::make_move (int move_y,int move_x){
     assert(valid_move(move_y,move_x));
     
@@ -137,13 +144,15 @@ void reversi::print(){
     turn = turn % 2 + 1;
  }
 
+//checks is move is valid by checking what rows would be captured
  bool reversi::valid_move(int move_y,int move_x){
     vector<pair<pair<int,int>,int>> rows = find_rows(move_y,move_x);
 
     return rows.size() > 0;
  }
 
-// inner pair repersent direction of row outer pair.second is length of row
+//retunrs rows that would be captured with move
+//inner pair repersent direction of row outer pair.second is length of row
 vector<pair<pair<int,int>,int>> reversi::find_rows(int move_y,int move_x){
     vector<pair<pair<int,int>,int>> rows;
 
@@ -182,8 +191,10 @@ vector<pair<pair<int,int>,int>> reversi::find_rows(int move_y,int move_x){
     }
 
     return rows;
- }
+}
 
+
+//checks if there is no moves for current player and next player
 bool reversi::game_done(){
      std::vector<std::pair<int,int>> moves = possible_moves();
     
@@ -197,8 +208,10 @@ bool reversi::game_done(){
      }
 
      return false; 
- }
+}
 
+//checks who won
+//assert: game is done
 int reversi::winner(){
     assert(game_done());
     int one = 0;
@@ -221,4 +234,4 @@ int reversi::winner(){
     } else {
         return 0;
     }
-  }
+}
