@@ -8,10 +8,11 @@
             "label": "g++ build active file",
             "command": "/usr/bin/g++",
             "args": [
+                "-Wall",
                 "-g",
-                "${file}",
+                "${workspaceFolder}/src/**.cpp",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${workspaceFolder}/bin/${workspaceFolderBasename}"
             ],
             "options": {
                 "cwd": "/usr/bin"
