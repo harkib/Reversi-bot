@@ -69,8 +69,12 @@ std::pair<int,int> pMCTS (reversi game_og){
 
 int main(){
 
-    uint test_board[8][8] = {};
+    uint test_board[64] = {};
     auto test_node = new Node(test_board);
+
+    auto test_moves = std::vector<std::pair<int,int>> {};
+    test_moves.push_back(std::pair<int,int>(2,2));
+    test_node->expand(test_moves, 1);
    
     reversi game;
     int y,x, rand_i;  
