@@ -23,7 +23,7 @@ class Node{
 
 };
 
-void Node::expand(std::vector<board_t> moves) {
+inline void Node::expand(std::vector<board_t> moves) {
     if (children.size() == 0) {
         for (auto move : moves) {
             children.push_back(std::unique_ptr<Node>(new Node(move)));
@@ -31,7 +31,7 @@ void Node::expand(std::vector<board_t> moves) {
     }
 }
 
-Node::~Node() {
+inline Node::~Node() {
     for (auto &child : children) {
         child.reset(nullptr);
     }
