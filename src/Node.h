@@ -2,9 +2,9 @@
 #include <vector>
 #include <array>
 
-//debuggin:
-#include <iostream> 
-#include <typeinfo>
+#ifndef __NODE_HEADER__
+#define __NODE_HEADER__
+
 
 class Node{
     typedef std::array<uint, 64> board_t; 
@@ -37,3 +37,4 @@ Node::~Node() {
     }
 }
 
+#endif
