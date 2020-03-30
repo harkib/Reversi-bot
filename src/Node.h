@@ -1,7 +1,6 @@
 #include <memory>
 #include <vector>
 #include <array>
-#include <iterator>
 
 //debuggin:
 #include <iostream> 
@@ -16,7 +15,7 @@ class Node{
         Node(board_t board_in) : board(board_in) {}
         ~Node();
 
-        void expand(std::vector<std::pair<int,int>>, int);
+        void expand(std::vector<board_t>);
         
     private:
         
@@ -24,12 +23,11 @@ class Node{
 
 };
 
-void Node::expand(std::vector<std::pair<int,int>> moves, int symbol) {
-    for (auto move : moves) {
-        board_t new_board = board;
-        //std::copy(std::begin(*board.get()), std::end(*board.get()), std::begin(new_board));
-        new_board[move.first + (8*move.second)] = symbol;
-        children.push_back(std::unique_ptr<Node>(new Node(new_board)));
+void Node::expand(std::vector<board_t> moves) {
+    if (children.size() == 0) {
+        for (auto move : moves) {
+            children.push_back(std::unique_ptr<Node>(new Node(move)));
+        }
     }
 }
 
