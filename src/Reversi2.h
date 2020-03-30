@@ -2,11 +2,11 @@
 #include <vector>
 #include <array>
 
-#include "Node.h"
+
 
 #ifndef __GAME_HEADER__
 #define __GAME_HEADER__
-
+#include "Node.h"
 
 class Reversi2 {
     const char blank, player1, player2; 

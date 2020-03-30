@@ -8,10 +8,12 @@
 
 class Node{
     typedef std::array<uint, 64> board_t; 
-    const board_t board;
+    
     std::vector<std::unique_ptr<Node>> children{};
 
     public:
+        const board_t board;
+        
         Node(board_t board_in) : board(board_in) {}
         ~Node();
 
