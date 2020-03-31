@@ -25,13 +25,15 @@ class Reversi2 {
         void print();
         
         std::vector<action_t> actions();
+        bool goal_test(); //TODO make private after tests
 
     private:
         // all of these below are just sort of rough guesses
         
         std::vector<action_t> actions(Node&);
 
-        bool goal_test(Node);
+        
+        bool goal_test(Node&);
         bool valid_move(board_t, space_t, char);
         board_t result(board_t, action_t, char);
 

@@ -94,10 +94,14 @@ std::vector<Reversi2::action_t> Reversi2::actions(Node& node) {
     (y >= 3) --> (-8)(dy=-1) above
     (y <= 6) --> (+8)(dy= 1) below
     */
-
-    
-
-
     return moves;
+}
+
+bool Reversi2::goal_test() {
+    return goal_test(*head);
+}
+
+bool Reversi2::goal_test(Node& node) {
+    return (actions(node).size() == 0);
 }
 
