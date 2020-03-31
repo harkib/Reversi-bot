@@ -5,7 +5,7 @@ Reversi2::Reversi2() :
     blank('0'), //make it a space for nicer display
     player1('B'),
     player2('W'),
-    head(std::unique_ptr<Node>(new Node(std::array<uint, 64>{
+    head(std::unique_ptr<Node>(new Node(board_t{
         blank, blank, blank, blank, blank, blank, blank, blank,
         blank, blank, blank, blank, blank, blank, blank, blank,
         blank, blank, blank, blank, blank, blank, blank, blank,
@@ -18,15 +18,19 @@ Reversi2::Reversi2() :
 {}
 
 void Reversi2::print() {
+    print(*head);
+}
+
+void Reversi2::print(Node& node) {
     std::cout << "┌───┬───┬───┬───┬───┬───┬───┬───┐" << std::endl;
     //std::cout << "| " << char(head->board[0]) << " ";
-    for (auto i = 0; i < head->board.size()-1; i++) {
-        std::cout << "| " << char(head->board[i]) << " ";
+    for (auto i = 0; i < node.board.size()-1; i++) {
+        std::cout << "| " << char(node.board[i]) << " ";
         if ((i+1) % 8 == 0) {
             std::cout << "|" << std::endl << "├───┼───┼───┼───┼───┼───┼───┼───┤" << std::endl;
         }
     }
-    std::cout << "| " << char(head->board.back()) << " |" << std::endl; // it was a pain to get the last or first to print correctly so this is easier
+    std::cout << "| " << char(node.board.back()) << " |" << std::endl; // it was a pain to get the last or first to print correctly so this is easier
     std::cout << "└───┴───┴───┴───┴───┴───┴───┴───┘" << std::endl;
 }
 
@@ -68,8 +72,8 @@ std::vector<Reversi2::action_t> Reversi2::actions(Node& node) {
 
             for (auto nieghbor : check) {
                 if ((node.board[i + nieghbor] == player2) && (node.board[i + 2*nieghbor] == blank)) { // TODO make it agnostic to which player
-                    std::cout << "found move: " << i << " to " << (i+2*nieghbor) << std::endl;
-                    moves.push_back({i, i+2*nieghbor});
+                    //std::cout << "found move: " << i << " to " << (i+2*nieghbor) << std::endl;
+                    moves.push_back(action_t{i, i+nieghbor, i+2*nieghbor});
                 }
             }
 
@@ -97,11 +101,36 @@ std::vector<Reversi2::action_t> Reversi2::actions(Node& node) {
     return moves;
 }
 
-bool Reversi2::goal_test() {
+bool Reversi2::goal_test() { //TODO make player agnostic
+
+    expand_childred(); //TODO testing line REMOVE!!!
+
+    print(*(head->children[2]));
+
     return goal_test(*head);
 }
 
 bool Reversi2::goal_test(Node& node) {
     return (actions(node).size() == 0);
+}
+
+Reversi2::board_t Reversi2::result(const Reversi2::board_t& old_board, Reversi2::action_t action) {
+    auto new_board = old_board;
+    auto symbol = old_board.at(action.space);
+    new_board.at(action.hop) = symbol;
+    new_board.at(action.destination) = symbol;
+
+    return new_board;
+}
+
+void Reversi2::expand_childred() {
+    auto new_boards = std::vector<board_t>{};
+    auto moves = actions(*head);
+
+    for (auto move : moves) {
+        new_boards.push_back(result(head->board, move));
+    }
+
+    head->expand(new_boards);
 }
 

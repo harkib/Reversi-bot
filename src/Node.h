@@ -6,13 +6,15 @@
 #define __NODE_HEADER__
 
 
-class Node{
-    typedef std::array<uint, 64> board_t; 
+//TODO this should be templte based to provide the board_t type
+class Node{ 
+    typedef std::array<uint8_t, 64> board_t; 
     
-    std::vector<std::unique_ptr<Node>> children{};
+    
 
     public:
         const board_t board;
+        std::vector<std::unique_ptr<Node>> children{};
         
         Node(board_t board_in) : board(board_in) {}
         ~Node();
