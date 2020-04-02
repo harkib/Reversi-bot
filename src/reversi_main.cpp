@@ -1,5 +1,6 @@
 #include "reversi.h"
 #include "Node.h"
+#include "Reversi2.h"
 
 //Assumes it is player 1, ie game.winner() = 1 -> it won
 // std::pair<int,int> betterAI (reversi game_og){
@@ -69,15 +70,7 @@ std::pair<int,int> pMCTS (reversi game_og){
 
 int main(){
 
-    std::array<uint, 64> test_board = {};
-    auto test_node = std::unique_ptr<Node>(new Node(test_board));
-
-    auto test_moves = std::vector<std::pair<int,int>> {};
-    test_moves.push_back(std::pair<int,int>(2,2));
-    test_node->expand(test_moves, 1);
-
-    test_node.reset(nullptr);
-   
+  
     reversi game;
     int y,x, rand_i;  
     pair<int,int> move_A1; 
