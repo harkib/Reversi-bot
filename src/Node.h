@@ -17,7 +17,15 @@ class Node{
         std::vector<std::unique_ptr<Node>> children{};
         
         Node(board_t board_in) : board(board_in) {}
-        Node(board_t board_in, uint8_t turn_in, bool skipped_in) : board(board_in), turn(turn_in), skipped(skipped_in) {}
+        Node(board_t board_in, uint8_t turn_in, bool skipped_in) : 
+            board(board_in), 
+            turn(turn_in), 
+            skipped(skipped_in) {}
+        Node(const Node& node_in) : 
+            board(node_in.board), 
+            turn(node_in.turn), 
+            skipped(node_in.skipped) {}
+        
         ~Node() {
             for (auto &child : children) {
                 child.reset(nullptr);

@@ -24,6 +24,11 @@ class Reversi2 {
         
 
         Reversi2();
+        Reversi2(const Reversi2& game_in) : 
+            blank(game_in.blank), 
+            player1(game_in.player1), 
+            player2(game_in.player2), 
+            head(std::unique_ptr<Node>(new Node(*game_in.head.get()))) {}
 
         void print();
         std::vector<action_t> actions();
