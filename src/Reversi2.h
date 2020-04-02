@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <algorithm>
 
 
 
@@ -40,6 +41,8 @@ class Reversi2 {
 
         void expand_children();
 
+        space_t winner();
+
 
     private:
         std::vector<action_t> actions(const Node&);
@@ -53,6 +56,8 @@ class Reversi2 {
         
         bool goal_test(const Node&);
         board_t result(const board_t&, action_t);
+
+        space_t winner(const Node&);
         
 };
 

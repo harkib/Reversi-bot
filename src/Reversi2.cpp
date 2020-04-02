@@ -172,4 +172,24 @@ void Reversi2::skip_turn() {
     print();
 }
 
+Reversi2::space_t Reversi2::winner() {
+    return winner(*head.get());
+}
+
+Reversi2::space_t Reversi2::winner(const Node& node) {
+    if (goal_test(node)) {
+        //this is the the only thing that uses <algorithm> and could easiliy be remade without it
+        auto player1_score = std::count(std::begin(node.board), std::end(node.board), player1); 
+        auto player2_score = std::count(std::begin(node.board), std::end(node.board), player2);
+        if (player1_score > player2_score) {
+            return player1;
+        } else if (player1_score < player2_score) {
+            return player2;
+        } else {
+            return blank; //tie
+        }
+    } else {
+        return NULL; //uh oh
+    }
+}
 
