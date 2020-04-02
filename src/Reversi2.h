@@ -12,8 +12,7 @@ class Reversi2 {
     const unsigned char blank, player1, player2; 
     std::unique_ptr<Node> head;
 
-    uint8_t turn = 0;
-    bool skipped = false;
+
     
 
     public:
@@ -30,6 +29,7 @@ class Reversi2 {
         std::vector<action_t> actions();
         
         void do_turn(action_t);
+        void skip_turn();
         
         bool goal_test(); //TODO make private after tests
 

@@ -14,7 +14,7 @@ Reversi2::Reversi2() :
         blank, blank, blank, blank, blank, blank, blank, blank,
         blank, blank, blank, blank, blank, blank, blank, blank,
         blank, blank, blank, blank, blank, blank, blank, blank
-    }))) //yes, really
+    }, 0, false))) //yes, really
 {}
 
 void Reversi2::print() {
@@ -51,7 +51,7 @@ std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) {
     auto moves =std::vector<action_t>{};
 
     space_t player;
-    if (turn % 2 == 0) {
+    if (node.turn % 2 == 0) {
         player = player1;
     } else {
         player = player2;
@@ -120,16 +120,11 @@ std::vector<Reversi2::action_t> Reversi2::find_rows(const Reversi2::board_t& boa
 }
 
 bool Reversi2::goal_test() { 
-
-
-
-
-
     return goal_test(*head);
 }
 
 bool Reversi2::goal_test(const Node& node) {
-    return ((actions(node).size() == 0) && skipped);
+    return ((actions(node).size() == 0) && node.skipped);
 }
 
 
@@ -156,7 +151,6 @@ Reversi2::board_t Reversi2::result(const Reversi2::board_t& old_board, Reversi2:
     return new_board; //should this be by referance?
 } 
 
-/*
 void Reversi2::expand_children() {
     auto new_boards = std::vector<board_t>{};
     auto moves = actions(*head);
@@ -168,11 +162,14 @@ void Reversi2::expand_children() {
     head->expand(new_boards);
 }
 
-*/
 void Reversi2::do_turn(Reversi2::action_t move) {
-    head.reset(new Node(result(head->board, move)));
+    head.reset(new Node(result(head->board, move), (head->turn+1), false));
     print();
-    turn++;
+}
+
+void Reversi2::skip_turn() {
+    head.reset(new Node(head->board, (head->turn+1), true));
+    print();
 }
 
 
