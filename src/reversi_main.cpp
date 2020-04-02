@@ -1,6 +1,7 @@
 #include "reversi.h"
 #include "Node.h"
 #include "Reversi2.h"
+#include "algorithim.h"
 
 //Assumes it is player 1, ie game.winner() = 1 -> it won
 // std::pair<int,int> betterAI (reversi game_og){
