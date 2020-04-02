@@ -17,15 +17,15 @@ Reversi2::Reversi2() :
     }, 0, false))) //yes, really
 {}
 
-void Reversi2::print() {
+void Reversi2::print() const {
     print(*head);
 }
 
-void Reversi2::print(const Reversi2::board_t& board) {
+void Reversi2::print(const Reversi2::board_t& board) const {
     print(Node(board));
 }
 
-void Reversi2::print(const Node& node) {
+void Reversi2::print(const Node& node) const {
     std::cout << "┌───┬───┬───┬───┬───┬───┬───┬───┐" << std::endl;
     //std::cout << "| " << char(head->board[0]) << " ";
     for (uint8_t i = 0; i < node.board.size()-1; i++) {
@@ -39,23 +39,18 @@ void Reversi2::print(const Node& node) {
 }
 
 //checks that the x doesn't change too much, indicating a wrap-around. and within the bounds
-bool Reversi2::consistent_line(int8_t prev_point, int8_t curr_point) {
+bool Reversi2::consistent_line(int8_t prev_point, int8_t curr_point) const {
     return ((curr_point > 0 || curr_point <= 64) && (abs((curr_point % 8) - (prev_point % 8)) <= 1));
 }
 
-std::vector<Reversi2::action_t> Reversi2::actions() {
+std::vector<Reversi2::action_t> Reversi2::actions() const {
     return actions(*head);
 }
 
-std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) {
+std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) const {
     auto moves =std::vector<action_t>{};
 
-    space_t player;
-    if (node.turn % 2 == 0) {
-        player = player1;
-    } else {
-        player = player2;
-    }
+    auto player = whos_turn(node);
     
     // this part works sort of like polar coordinates. it first goes through the entire board to find it's own pieces. 
     // then it goes through each cardinal direction and moves outward until it:
@@ -93,7 +88,7 @@ std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) {
 }
 
 //find rows from a given space. uses a specified end for different uses.
-std::vector<Reversi2::action_t> Reversi2::find_rows(const Reversi2::board_t& board, Reversi2::space_t end_char, int8_t space) {
+std::vector<Reversi2::action_t> Reversi2::find_rows(const Reversi2::board_t& board, Reversi2::space_t end_char, int8_t space) const {
     auto rows =std::vector<action_t>{};
     const auto theta_list = std::array<int8_t, 8>{-9, -8, -7, -1, 9, 8, 7, 1};
 
@@ -119,16 +114,16 @@ std::vector<Reversi2::action_t> Reversi2::find_rows(const Reversi2::board_t& boa
     return rows;
 }
 
-bool Reversi2::goal_test() { 
+bool Reversi2::goal_test() const { 
     return goal_test(*head);
 }
 
-bool Reversi2::goal_test(const Node& node) {
+bool Reversi2::goal_test(const Node& node) const {
     return ((actions(node).size() == 0) && node.skipped);
 }
 
 
-Reversi2::board_t Reversi2::result(const Reversi2::board_t& old_board, Reversi2::action_t action) {
+Reversi2::board_t Reversi2::result(const Reversi2::board_t& old_board, Reversi2::action_t action) const {
     auto new_board = old_board;
     auto symbol = old_board.at(action.old_space);
     int8_t dist, offset;
@@ -172,11 +167,11 @@ void Reversi2::skip_turn() {
     print();
 }
 
-Reversi2::space_t Reversi2::winner() {
+Reversi2::space_t Reversi2::winner() const {
     return winner(*head.get());
 }
 
-Reversi2::space_t Reversi2::winner(const Node& node) {
+Reversi2::space_t Reversi2::winner(const Node& node) const {
     if (goal_test(node)) {
         //this is the the only thing that uses <algorithm> and could easiliy be remade without it
         auto player1_score = std::count(std::begin(node.board), std::end(node.board), player1); 
@@ -190,6 +185,18 @@ Reversi2::space_t Reversi2::winner(const Node& node) {
         }
     } else {
         return NULL; //uh oh
+    }
+}
+
+const Reversi2::space_t Reversi2::whos_turn() const {
+    return whos_turn(*head.get());
+}
+
+Reversi2::space_t Reversi2::whos_turn(const Node& node) const {
+    if (node.turn % 2 == 0) {
+        return player1;
+    } else {
+        return player2;
     }
 }
 
