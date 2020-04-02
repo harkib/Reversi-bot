@@ -21,7 +21,7 @@ void Reversi2::print() {
     print(*head);
 }
 
-void Reversi2::print(Node& node) {
+void Reversi2::print(const Node& node) {
     std::cout << "┌───┬───┬───┬───┬───┬───┬───┬───┐" << std::endl;
     //std::cout << "| " << char(head->board[0]) << " ";
     for (auto i = 0; i < node.board.size()-1; i++) {
@@ -39,11 +39,21 @@ std::vector<Reversi2::action_t> Reversi2::actions() {
     return actions(*head);
 }
 
-std::vector<Reversi2::action_t> Reversi2::actions(Node& node) {
+std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) {
     std::vector<action_t> moves{};
     std::vector<int8_t> check{};
+
+    space_t player, opponent;
+    if (turn % 2 == 0) {
+        player = player1;
+        opponent = player2;
+    } else {
+        player = player2;
+        opponent = player1;
+    }
+
     for (auto i = 0; i < node.board.size(); i++) { //it'd be nice if this was range based
-        if (node.board[i] == player1) { // TODO make it agnostic to which player
+        if (node.board[i] == player) { 
             // TODO there has got to be a better way to do this. It's so many lines for so little.
             if                  (i / 8 >= 2) { //N
                 check.push_back(-8);
@@ -71,9 +81,9 @@ std::vector<Reversi2::action_t> Reversi2::actions(Node& node) {
             }
 
             for (auto nieghbor : check) {
-                if ((node.board[i + nieghbor] == player2) && (node.board[i + 2*nieghbor] == blank)) { // TODO make it agnostic to which player
+                if ((node.board[i + nieghbor] == opponent) && (node.board[i + 2*nieghbor] == blank)) { 
                     //std::cout << "found move: " << i << " to " << (i+2*nieghbor) << std::endl;
-                    moves.push_back(action_t{i, i+nieghbor, i+2*nieghbor});
+                    moves.push_back(action_t{i, i+2*nieghbor});
                 }
             }
 
@@ -98,29 +108,28 @@ std::vector<Reversi2::action_t> Reversi2::actions(Node& node) {
     (y >= 3) --> (-8)(dy=-1) above
     (y <= 6) --> (+8)(dy= 1) below
     */
-    return moves;
+    return moves; //I'm not sure why the linter is picking this up as an error
 }
 
 bool Reversi2::goal_test() { //TODO make player agnostic
-
-    expand_childred(); //TODO testing line REMOVE!!!
-
-    print(*(head->children[2]));
-
     return goal_test(*head);
+
+
+    
+
 }
 
-bool Reversi2::goal_test(Node& node) {
+bool Reversi2::goal_test(const Node& node) {
     return (actions(node).size() == 0);
 }
 
 Reversi2::board_t Reversi2::result(const Reversi2::board_t& old_board, Reversi2::action_t action) {
     auto new_board = old_board;
     auto symbol = old_board.at(action.space);
-    new_board.at(action.hop) = symbol;
     new_board.at(action.destination) = symbol;
-
-    return new_board;
+    new_board.at((action.space+action.destination)/2) = symbol;  // the space that it jumps over
+    
+    return new_board; //should this be by referance?
 }
 
 void Reversi2::expand_childred() {
@@ -132,5 +141,10 @@ void Reversi2::expand_childred() {
     }
 
     head->expand(new_boards);
+}
+
+void Reversi2::do_turn(Reversi2::action_t move) {
+    head.reset(new Node(result(head->board, move)));
+    turn++;
 }
 
