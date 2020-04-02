@@ -13,6 +13,7 @@ class Reversi2 {
     std::unique_ptr<Node> head;
 
     uint8_t turn = 0;
+    bool skipped = false;
     
 
     public:
@@ -40,6 +41,9 @@ class Reversi2 {
         bool consistent_line(int8_t, int8_t);
         
         void print(const Node&);
+        void print(const board_t&);
+
+        std::vector<action_t> find_rows(const board_t&, space_t, int8_t);
         
         
         bool goal_test(const Node&);

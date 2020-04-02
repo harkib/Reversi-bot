@@ -21,6 +21,10 @@ void Reversi2::print() {
     print(*head);
 }
 
+void Reversi2::print(const Reversi2::board_t& board) {
+    print(Node(board));
+}
+
 void Reversi2::print(const Node& node) {
     std::cout << "┌───┬───┬───┬───┬───┬───┬───┬───┐" << std::endl;
     //std::cout << "| " << char(head->board[0]) << " ";
@@ -46,14 +50,11 @@ std::vector<Reversi2::action_t> Reversi2::actions() {
 std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) {
     auto moves =std::vector<action_t>{};
 
-    auto theta_list = std::array<int8_t, 8>{-9, -8, -7, -1, 9, 8, 7, 1};
-    space_t player, opponent;
+    space_t player;
     if (turn % 2 == 0) {
         player = player1;
-        opponent = player2;
     } else {
         player = player2;
-        opponent = player1;
     }
     
     // this part works sort of like polar coordinates. it first goes through the entire board to find it's own pieces. 
@@ -64,16 +65,8 @@ std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) {
     // it only moves out along the opponent's type of pieces
     for (uint8_t i = 0; i < node.board.size(); i++) { //it'd be nice if this was range based
         if (node.board.at(i) == player) {
-            for (auto theta : theta_list) {
-                for (int8_t r = 1; consistent_line(i + r*theta, i + (r-1)*theta); r++) {
-                    if ((r > 1) && (node.board.at(i + r*theta) == blank)) {
-                        moves.push_back(action_t{i + r*theta, i});
-                        break;
-                    } else if (node.board.at(i + r*theta) != opponent) { 
-                        break;
-                    }
-                }
-            }
+            auto new_moves = find_rows(node.board, blank, i);
+            moves.insert(std::begin(moves), std::begin(new_moves), std::end(new_moves));
         }
     }
 
@@ -99,24 +92,71 @@ std::vector<Reversi2::action_t> Reversi2::actions(const Node& node) {
     */
 }
 
-bool Reversi2::goal_test() { //TODO make player agnostic
+//find rows from a given space. uses a specified end for different uses.
+std::vector<Reversi2::action_t> Reversi2::find_rows(const Reversi2::board_t& board, Reversi2::space_t end_char, int8_t space) {
+    auto rows =std::vector<action_t>{};
+    const auto theta_list = std::array<int8_t, 8>{-9, -8, -7, -1, 9, 8, 7, 1};
+
+    space_t player, opponent;
+    player = board.at(space);
+    if (player == player1) {
+        opponent = player2;
+    } else {
+        opponent = player1;
+    }
+
+    for (auto theta : theta_list) {
+        for (int8_t r = 1; consistent_line(space + r*theta, space + (r-1)*theta); r++) {
+            if ((r > 1) && (board.at(space + r*theta) == end_char)) {
+                rows.push_back(action_t{space + r*theta, space});
+                break;
+            } else if (board.at(space + r*theta) != opponent) { 
+                break;
+            }
+        }
+    }
+
+    return rows;
+}
+
+bool Reversi2::goal_test() { 
+
+
+
+
+
     return goal_test(*head);
 }
 
 bool Reversi2::goal_test(const Node& node) {
-    return (actions(node).size() == 0);
+    return ((actions(node).size() == 0) && skipped);
 }
 
-/* 
+
 Reversi2::board_t Reversi2::result(const Reversi2::board_t& old_board, Reversi2::action_t action) {
     auto new_board = old_board;
-    auto symbol = old_board.at(action.space);
-    new_board.at(action.destination) = symbol;
-    new_board.at((action.space+action.destination)/2) = symbol;  // the space that it jumps over
+    auto symbol = old_board.at(action.old_space);
+    int8_t dist, offset;
+
+    new_board.at(action.new_space) = symbol;
+
+    //for each row, it does some math to fill in what's in between
+    auto rows = find_rows(new_board, symbol, action.new_space);
+    for (auto row : rows) {
+        dist = (row.old_space % 8) - (row.new_space % 8);
+        if (dist == 0) {
+            dist = (row.old_space / 8) - (row.new_space / 8);
+        }
+        offset = (row.new_space - row.old_space)/abs(dist);
+        for (int8_t space = row.old_space; space != row.new_space; space += offset) {
+            new_board.at(space) = symbol;
+        }
+    }
     
     return new_board; //should this be by referance?
 } 
 
+/*
 void Reversi2::expand_children() {
     auto new_boards = std::vector<board_t>{};
     auto moves = actions(*head);
@@ -128,9 +168,11 @@ void Reversi2::expand_children() {
     head->expand(new_boards);
 }
 
+*/
 void Reversi2::do_turn(Reversi2::action_t move) {
     head.reset(new Node(result(head->board, move)));
+    print();
     turn++;
 }
 
-*/
+
