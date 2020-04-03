@@ -39,8 +39,8 @@ void Reversi2::print(const Node& node) const {
 }
 
 //checks that the x doesn't change too much, indicating a wrap-around. and within the bounds
-bool Reversi2::consistent_line(int8_t prev_point, int8_t curr_point) const {
-    return ((curr_point > 0 || curr_point <= 64) && (abs((curr_point % 8) - (prev_point % 8)) <= 1));
+bool Reversi2::consistent_line(int8_t curr_point, int8_t prev_point) const {
+    return ((curr_point >= 0 && curr_point < 64) && (abs((curr_point % 8) - (prev_point % 8)) <= 1));
 }
 
 std::vector<Reversi2::action_t> Reversi2::actions() const {
@@ -147,14 +147,18 @@ Reversi2::board_t Reversi2::result(const Reversi2::board_t& old_board, Reversi2:
 } 
 
 void Reversi2::expand_children() {
+    expand_children(*head);
+}
+
+void Reversi2::expand_children(Node& node) {
     auto new_boards = std::vector<board_t>{};
-    auto moves = actions(*head);
+    auto moves = actions(node);
 
     for (auto move : moves) {
         new_boards.push_back(result(head->board, move));
     }
 
-    head->expand(new_boards);
+    node.expand(new_boards);
 }
 
 void Reversi2::do_turn(Reversi2::action_t move) {
@@ -189,7 +193,7 @@ Reversi2::space_t Reversi2::winner(const Node& node) const {
 }
 
 const Reversi2::space_t Reversi2::whos_turn() const {
-    return whos_turn(*head.get());
+    return whos_turn(*head);
 }
 
 Reversi2::space_t Reversi2::whos_turn(const Node& node) const {
@@ -199,4 +203,9 @@ Reversi2::space_t Reversi2::whos_turn(const Node& node) const {
         return player2;
     }
 }
+
+Node& Reversi2::get_head() const {
+    return *head;
+}
+
 

@@ -40,6 +40,7 @@ class Reversi2 {
         bool goal_test() const; //TODO make private after tests
 
         void expand_children();
+        Node& get_head() const;
 
         space_t winner() const;
         const space_t whos_turn() const;
@@ -54,6 +55,7 @@ class Reversi2 {
 
         std::vector<action_t> find_rows(const board_t&, space_t, int8_t) const;
         
+        void expand_children(Node&);
         
         bool goal_test(const Node&) const;
         board_t result(const board_t&, action_t) const;
