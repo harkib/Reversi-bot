@@ -5,17 +5,18 @@
 #include "Reversi2.h"
 
 Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::action_t(Reversi2&)> hueristic) {
-    const uint max_playouts = 1000;
-    const uint max_time_ms = 5000;
     const auto choices = game_in.actions();
+    const auto num_choices = choices.size();
+    const uint max_playouts = 1000 / num_choices;
+    const uint max_time_ms = 5000;
     auto wins = std::vector<uint>{};
+    wins.resize(num_choices, 0);
     auto player = game_in.whos_turn();
-    uint i = 0;
-
-    //perfrom posible move then playout
-    for (auto choice : choices) {
-        wins.push_back(0);
-        for (uint n = 0, curr_time_ms = 0; (n < max_playouts) && (curr_time_ms < max_time_ms); n++){ //TODO make it count time
+    uint choice_num = 0;
+    
+    for (uint n = 0, curr_time_ms = 0; (n < max_playouts) && (curr_time_ms < max_time_ms); n++){ //TODO make it count time
+        choice_num = 0;
+        for (auto choice : choices) {
             auto game = Reversi2(game_in); //beware, does not copy children
             game.do_turn(choice);
             while(!game.goal_test()) {
@@ -28,11 +29,10 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
                 }
             }
             if (game.winner() == player) {
-                wins.at(i) += 1;
-            }  
-            
+                wins.at(choice_num) += 1;
+            }
+            choice_num++;
         }
-        i++;
     }
     //choose max wins
     uint max = 0;
@@ -49,7 +49,7 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
 
 Reversi2::action_t random_h(Reversi2& game_in) {  
     auto head = game_in.get_head();
-    auto rand_i = rand() % head->children.size();
+    auto rand_i = rand() % head->children.size(); //apparently not a good random element method but w/e
     auto node_action = head->children.at(rand_i)->action;
     auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
 
