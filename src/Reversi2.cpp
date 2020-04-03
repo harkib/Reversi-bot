@@ -2,7 +2,7 @@
 #include <iostream>
 
 Reversi2::Reversi2() :
-    blank('0'), //make it a space for nicer display
+    blank(' '), //make it a space for nicer display
     player1('B'),
     player2('W'),
     head(std::unique_ptr<Node>(new Node(board_t{
@@ -153,22 +153,26 @@ void Reversi2::expand_children() {
 void Reversi2::expand_children(Node& node) {
     auto new_boards = std::vector<board_t>{};
     auto moves = actions(node);
+    auto moves_new = std::vector<int8_t>{}; //what a horrible way to do this but sharing typedefs is just not working.. D:
+    auto moves_old = std::vector<int8_t>{};
 
     for (auto move : moves) {
         new_boards.push_back(result(head->board, move));
+        moves_new.push_back(move.new_space);
+        moves_old.push_back(move.old_space);
     }
 
-    node.expand(new_boards);
+    node.expand(new_boards, moves_new, moves_old);
 }
 
 void Reversi2::do_turn(Reversi2::action_t move) {
     head.reset(new Node(result(head->board, move), {move.new_space, move.old_space}, (head->turn+1), false)); //lol the action_t bit is so bad
-    print();
+    //print();
 }
 
 void Reversi2::skip_turn() {
     head.reset(new Node(head->board, {-1, -1}, (head->turn+1), true));
-    print();
+    //print();
 }
 
 Reversi2::space_t Reversi2::winner() const {
@@ -204,8 +208,8 @@ Reversi2::space_t Reversi2::whos_turn(const Node& node) const {
     }
 }
 
-Node& Reversi2::get_head() const {
-    return *head;
+Node* Reversi2::get_head() const {
+    return head.get();
 }
 
 

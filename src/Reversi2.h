@@ -40,7 +40,7 @@ class Reversi2 {
         bool goal_test() const; //TODO make private after tests
 
         void expand_children();
-        Node& get_head() const;
+        Node* get_head() const;
 
         space_t winner() const;
         const space_t whos_turn() const;

@@ -14,15 +14,13 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
 
     //perfrom posible move then playout
     for (auto choice : choices) {
-        auto game = Reversi2(game_in); //beware, does not copy children
         wins.push_back(0);
-        game.do_turn(choice);
-        game.expand_children();
-
         for (uint n = 0, curr_time_ms = 0; (n < max_playouts) && (curr_time_ms < max_time_ms); n++){ //TODO make it count time
+            auto game = Reversi2(game_in); //beware, does not copy children
+            game.do_turn(choice);
             while(!game.goal_test()) {
                 game.expand_children();
-                if (game.get_head().children.size() == 0) {
+                if (game.get_head()->children.size() == 0) {
                     game.skip_turn();
                 } else {
                     auto next_action = hueristic(game);
@@ -32,6 +30,7 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
             if (game.winner() == player) {
                 wins.at(i) += 1;
             }  
+            
         }
         i++;
     }
@@ -49,10 +48,12 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
 
 
 Reversi2::action_t random_h(Reversi2& game_in) {  
-    auto actions = game_in.actions();
-    auto rand_i = rand() % actions.size();
+    auto head = game_in.get_head();
+    auto rand_i = rand() % head->children.size();
+    auto node_action = head->children.at(rand_i)->action;
+    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
 
-    return actions.at(rand_i);
+    return action;
 }
 
 
