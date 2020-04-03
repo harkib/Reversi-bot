@@ -7,10 +7,11 @@
 
 int main(){
     std::function<Reversi2::action_t(Reversi2& game_in)> random_f = random_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> mobility_h = mobility_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> capture_h = capture_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> corner_h = corner_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> stability_h = stability_h;
+    std::function<Reversi2::action_t(Reversi2& game_in)> mobility_f = mobility_h;
+    //std::function<Reversi2::action_t(Reversi2& game_in)> capture_f = capture_h;
+    //std::function<Reversi2::action_t(Reversi2& game_in)> corner_f = corner_h;
+    //std::function<Reversi2::action_t(Reversi2& game_in)> stability_f = stability_h;
+    std::function<Reversi2::action_t(Reversi2& game_in)> blocking_f = blocking_h;
 
     auto game = Reversi2();
     auto action = Reversi2::action_t{0,0};
@@ -22,7 +23,7 @@ int main(){
             game.skip_turn();
         } else {
             if (((game.get_head()->turn) % 2) == 0) {
-                action = monte_carlo(game, random_f); //TODO change to a better one
+                action = monte_carlo(game, mobility_h);
             } else {
                 action = monte_carlo(game, random_f);
             }

@@ -1,13 +1,15 @@
 #include <ctime>
 #include <functional>
 
+#include <iostream>
+
 #include "algorithim.h"
 #include "Reversi2.h"
 
 Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::action_t(Reversi2&)> hueristic) {
     const auto choices = game_in.actions();
     const auto num_choices = choices.size();
-    const uint max_playouts = 1000 / num_choices;
+    const uint max_playouts = 200 / num_choices;
     const uint max_time_ms = 5000;
     auto wins = std::vector<uint>{};
     wins.resize(num_choices, 0);
@@ -60,23 +62,32 @@ Reversi2::action_t random_h(Reversi2& game_in) {
    uses the average from all possible opponent moves. */
 Reversi2::action_t mobility_h(Reversi2& game_in) {
     auto head = game_in.get_head();
-    uint max_mobility = 0;
+    float max_mobility = 0;
     Node* max_node = nullptr;
     float average = 0;
 
+    
     for (auto& child : head->children) {
         average = 0;
         game_in.expand_children(*child);
         for (auto& grandchild : child->children) { //needs to be two levels to get back to the players turn
             game_in.expand_children(*grandchild);
-            average += grandchild->children.size();
+            average += grandchild->children.size(); //or technically 3 levels
         }
-        if ((average / float(child->children.size()))  > max_mobility) {
-            max_mobility = (average / float(child->children.size()));
-            max_node = child.get(); //child, not grandchild!
+        if (!child->children.empty()) {
+            if ((average / float(child->children.size()))  > max_mobility) {
+                max_mobility = average / float(child->children.size());
+                max_node = child.get(); 
+            }
         }
     }
     
+    if (max_node == nullptr) {
+        //no move yields any mobility so just choose a random one
+        //odds are there is only one move left anyways
+        return random_h(game_in);
+    }
+
     auto node_action = max_node->action;
     auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
     return action;
