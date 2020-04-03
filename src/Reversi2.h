@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <algorithm>
 
 
 
@@ -24,30 +25,42 @@ class Reversi2 {
         
 
         Reversi2();
+        Reversi2(const Reversi2& game_in) : 
+            blank(game_in.blank), 
+            player1(game_in.player1), 
+            player2(game_in.player2), 
+            head(std::unique_ptr<Node>(new Node(*game_in.head.get()))) {}
 
-        void print();
-        std::vector<action_t> actions();
+        void print() const;
+        std::vector<action_t> actions() const;
         
         void do_turn(action_t);
         void skip_turn();
         
-        bool goal_test(); //TODO make private after tests
+        bool goal_test() const; //TODO make private after tests
 
         void expand_children();
+        void expand_children(Node&);
+        Node* get_head() const;
+
+        space_t winner() const;
+        const space_t whos_turn() const;
 
 
     private:
-        std::vector<action_t> actions(const Node&);
-        bool consistent_line(int8_t, int8_t);
+        std::vector<action_t> actions(const Node&) const;
+        bool consistent_line(int8_t, int8_t) const;
         
-        void print(const Node&);
-        void print(const board_t&);
+        void print(const Node&) const;
+        void print(const board_t&) const;
 
-        std::vector<action_t> find_rows(const board_t&, space_t, int8_t);
+        std::vector<action_t> find_rows(const board_t&, space_t, int8_t) const;
         
-        
-        bool goal_test(const Node&);
-        board_t result(const board_t&, action_t);
+        bool goal_test(const Node&) const;
+        board_t result(const board_t&, action_t) const;
+
+        space_t winner(const Node&) const;
+        space_t whos_turn(const Node&) const;
         
 };
 
