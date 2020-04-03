@@ -2,6 +2,7 @@
 #include <vector>
 #include <array>
 #include <functional>
+#include <random>
 
 
 
@@ -11,9 +12,9 @@
 #include "Reversi2.h"
 
 
-Reversi2::action_t monte_carlo(const Reversi2&, std::vector<Reversi2::action_t>, Reversi2::action_t (*)(void));
+Reversi2::action_t monte_carlo(const Reversi2&, std::function<Reversi2::action_t(Reversi2&)>);
 
-Reversi2::action_t random_h();
+Reversi2::action_t random_h(Reversi2&);
 Reversi2::action_t mobility_h();
 Reversi2::action_t capture_h();
 Reversi2::action_t corner_h();
