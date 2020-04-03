@@ -1,4 +1,4 @@
-#include <ctime>
+#include <chrono>
 #include <functional>
 
 #include <iostream>
@@ -7,16 +7,18 @@
 #include "Reversi2.h"
 
 Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::action_t(Reversi2&)> hueristic) {
+    typedef std::chrono::system_clock clock;
     const auto choices = game_in.actions();
     const auto num_choices = choices.size();
-    const uint max_playouts = 200 / num_choices;
-    const uint max_time_ms = 5000;
+    const uint max_playouts = 5000 / num_choices;
+    const uint max_time = 30000; //in milliseconds
     auto wins = std::vector<uint>{};
     wins.resize(num_choices, 0);
     auto player = game_in.whos_turn();
     uint choice_num = 0;
+    uint n = 0;
     
-    for (uint n = 0, curr_time_ms = 0; (n < max_playouts) && (curr_time_ms < max_time_ms); n++){ //TODO make it count time
+    for (auto curr_time = clock::now(), end_time = curr_time + std::chrono::milliseconds(max_time); (n < max_playouts) && (curr_time < end_time); n++, curr_time = clock::now()){ 
         choice_num = 0;
         for (auto choice : choices) {
             auto game = Reversi2(game_in); //beware, does not copy children
@@ -45,6 +47,8 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
             i_max = i;
         }
     }
+    std::cout << "Player " << player << " thought about " << (n*num_choices) << " playouts" << std::endl;
+
     return choices.at(i_max);
 }
 
@@ -105,6 +109,12 @@ Reversi2::action_t blocking_h(Reversi2& game_in) {
             min_mobility = child->children.size();
             min_node = child.get();
         }
+    }
+
+    if (min_node == nullptr) {
+        //no move yields any blocking so just choose a random one
+        //odds are there is only one move left anyways
+        return random_h(game_in);
     }
     
     auto node_action = min_node->action;
