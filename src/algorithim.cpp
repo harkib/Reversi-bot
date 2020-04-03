@@ -11,14 +11,14 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
     const auto choices = game_in.actions();
     const auto num_choices = choices.size();
     const uint max_playouts = 5000 / num_choices;
-    const uint max_time = 30000; //in milliseconds
+    const uint max_time = 10; //in seconds
     auto wins = std::vector<uint>{};
     wins.resize(num_choices, 0);
     auto player = game_in.whos_turn();
     uint choice_num = 0;
     uint n = 0;
     
-    for (auto curr_time = clock::now(), end_time = curr_time + std::chrono::milliseconds(max_time); (n < max_playouts) && (curr_time < end_time); n++, curr_time = clock::now()){ 
+    for (auto curr_time = clock::now(), end_time = curr_time + std::chrono::seconds(max_time); (n < max_playouts) && (curr_time < end_time); n++, curr_time = clock::now()){ 
         choice_num = 0;
         for (auto choice : choices) {
             auto game = Reversi2(game_in); //beware, does not copy children
@@ -39,18 +39,24 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
         }
     }
     //choose max wins
-    uint max = 0;
+    uint max_score = 0;
     uint i_max = 0;
     for(uint i = 0; i < wins.size(); i++){
-        if(wins[i] > max) {
-            max = wins[i];
+        if(wins[i] > max_score) {
+            max_score = wins[i];
             i_max = i;
         }
     }
-    std::cout << "Player " << player << " thought about " << (n*num_choices) << " playouts" << std::endl;
+    std::cout << "Player " << player << " considered " << (n*num_choices) << " playouts" << std::endl;
 
     return choices.at(i_max);
 }
+
+
+/* HEURTISTIC FUNCTIONS
+   accepts the current game and returns the best move accoring to it's own ideas
+   it is assumed that at least one level of children have been expanded
+*/
 
 /* just makes random moves */
 Reversi2::action_t random_h(Reversi2& game_in) {  
@@ -70,7 +76,6 @@ Reversi2::action_t mobility_h(Reversi2& game_in) {
     Node* max_node = nullptr;
     float average = 0;
 
-    
     for (auto& child : head->children) {
         average = 0;
         game_in.expand_children(*child);
@@ -122,9 +127,48 @@ Reversi2::action_t blocking_h(Reversi2& game_in) {
     return action;
 }
 
-Reversi2::action_t capture_h(Reversi2& game_in);
-Reversi2::action_t corner_h(Reversi2& game_in);
+/* trys to have as many tiles on the board as possible */
+Reversi2::action_t capture_h(Reversi2& game_in) {
+    auto head = game_in.get_head();
+    auto player = game_in.whos_turn();
+    uint max_total = std::count(std::begin(head->board), std::end(head->board), player);
+    uint total = 0;
+    Node* max_node = nullptr;
 
+    for (auto& child : head->children) {
+        total = std::count(std::begin(child->board), std::end(child->board), player);
+        if (total > max_total) {
+            max_total = child->children.size();
+            max_node = child.get();
+        }
+    }
 
+    if (max_node == nullptr) {
+        //somehow went down in number of tiles...
+        //so pick a random move
+        return random_h(game_in);
+    }
+    
+    auto node_action = max_node->action;
+    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
+    return action;
+}
+
+Reversi2::action_t corner_h(Reversi2& game_in) {
+    auto head = game_in.get_head();
+
+    for (auto& child : head->children) {
+        for (auto corner_space : {0, 7, 56, 63}) {
+            if (child->action.new_space == corner_space) {
+                auto node_action = child.get()->action;
+                auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
+                return action;
+            }
+        }
+    }
+
+    //nothing is a corner so pick a random move
+    return random_h(game_in);    
+}
 
 Reversi2::action_t stability_h(Reversi2&);
