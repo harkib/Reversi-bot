@@ -14,7 +14,7 @@ Reversi2::Reversi2() :
         blank, blank, blank, blank, blank, blank, blank, blank,
         blank, blank, blank, blank, blank, blank, blank, blank,
         blank, blank, blank, blank, blank, blank, blank, blank
-    }, 0, false))) //yes, really
+    }))) //yes, really
 {}
 
 void Reversi2::print() const {
@@ -162,12 +162,12 @@ void Reversi2::expand_children(Node& node) {
 }
 
 void Reversi2::do_turn(Reversi2::action_t move) {
-    head.reset(new Node(result(head->board, move), (head->turn+1), false));
+    head.reset(new Node(result(head->board, move), {move.new_space, move.old_space}, (head->turn+1), false)); //lol the action_t bit is so bad
     print();
 }
 
 void Reversi2::skip_turn() {
-    head.reset(new Node(head->board, (head->turn+1), true));
+    head.reset(new Node(head->board, {-1, -1}, (head->turn+1), true));
     print();
 }
 
