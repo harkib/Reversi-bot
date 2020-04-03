@@ -17,6 +17,7 @@ class Node{
         const action_t action{-1, -1};
         const uint8_t turn = 0;
         const bool skipped = false;
+        int value = 0;
         std::vector<std::unique_ptr<Node>> children{};
         
         Node(board_t board_in) : board(board_in) {}
@@ -29,7 +30,8 @@ class Node{
             board(node_in.board), 
             action(node_in.action),
             turn(node_in.turn), 
-            skipped(node_in.skipped) {}
+            skipped(node_in.skipped),
+            value(node_in.value) {}
         
         ~Node() {
             for (auto &child : children) {
@@ -43,6 +45,15 @@ class Node{
                     children.push_back(std::unique_ptr<Node>(new Node(boards.back(), {moves_new.back(), moves_old.back()}, turn+1, false)));
                 }
             }
+        }
+
+        auto h_value() {
+            return value;
+        }
+
+        auto h_value(int value_in) {
+            value += value_in;
+            return value;
         }
         
     private:
