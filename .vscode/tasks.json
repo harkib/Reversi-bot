@@ -9,6 +9,7 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-Wall",
+                "-pg",
                 "-g",
                 "${workspaceFolder}/src/**.cpp",
                 "-o",
