@@ -46,7 +46,7 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
     return choices.at(i_max);
 }
 
-
+/* just makes random moves */
 Reversi2::action_t random_h(Reversi2& game_in) {  
     auto head = game_in.get_head();
     auto rand_i = rand() % head->children.size(); //apparently not a good random element method but w/e
@@ -56,8 +56,54 @@ Reversi2::action_t random_h(Reversi2& game_in) {
     return action;
 }
 
+/* finds what move leads to the maximum number of availible moves next turn.
+   uses the average from all possible opponent moves. */
+Reversi2::action_t mobility_h(Reversi2& game_in) {
+    auto head = game_in.get_head();
+    uint max_mobility = 0;
+    Node* max_node = nullptr;
+    float average = 0;
 
-Reversi2::action_t mobility_h();
-Reversi2::action_t capture_h();
-Reversi2::action_t corner_h();
-Reversi2::action_t stability_h();
+    for (auto& child : head->children) {
+        average = 0;
+        game_in.expand_children(*child);
+        for (auto& grandchild : child->children) { //needs to be two levels to get back to the players turn
+            game_in.expand_children(*grandchild);
+            average += grandchild->children.size();
+        }
+        if ((average / float(child->children.size()))  > max_mobility) {
+            max_mobility = (average / float(child->children.size()));
+            max_node = child.get(); //child, not grandchild!
+        }
+    }
+    
+    auto node_action = max_node->action;
+    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
+    return action;
+}
+
+/* makes moves that result in the fewest moves for the opponent */
+Reversi2::action_t blocking_h(Reversi2& game_in) {
+    auto head = game_in.get_head();
+    uint min_mobility = 64;
+    Node* min_node = nullptr;
+
+    for (auto& child : head->children) {
+        game_in.expand_children(*child);
+        if (child->children.size() < min_mobility) {
+            min_mobility = child->children.size();
+            min_node = child.get();
+        }
+    }
+    
+    auto node_action = min_node->action;
+    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
+    return action;
+}
+
+Reversi2::action_t capture_h(Reversi2& game_in);
+Reversi2::action_t corner_h(Reversi2& game_in);
+
+
+
+Reversi2::action_t stability_h(Reversi2&);
