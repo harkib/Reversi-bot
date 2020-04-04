@@ -21,6 +21,7 @@ child_ptr blocking_h(Reversi2&);
 child_ptr capture_h(Reversi2&);
 child_ptr corner_h(Reversi2&);
 child_ptr stability_h(Reversi2&);
+child_ptr combo_h(Reversi2&);
 
 
 #endif

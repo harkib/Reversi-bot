@@ -12,6 +12,7 @@ int main(){
     std::function<child_ptr(Reversi2& game_in)> corner_f = corner_h;
     //std::function<child_ptr(Reversi2& game_in)> stability_f = stability_h;
     std::function<child_ptr(Reversi2& game_in)> blocking_f = blocking_h;
+    std::function<child_ptr(Reversi2& game_in)> combo_f = combo_h;
 
     auto game = Reversi2();
 
@@ -19,11 +20,11 @@ int main(){
         game.print();
         std::cout << std::endl;
         game.expand_children();
-        if (game.get_head()->children.size() == 0) {
+        if (game.get_head()->children.empty()) {
             game.skip_turn();
         } else {
             if (((game.get_head()->turn) % 2) == 0) {
-                game.do_turn(monte_carlo(game, corner_f)); //player B
+                game.do_turn(monte_carlo(game, combo_f)); //player B
             } else {
                 game.do_turn(monte_carlo(game, random_f)); //player W
             }

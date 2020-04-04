@@ -85,6 +85,7 @@ child_ptr mobility_h(Reversi2& game_in) {
             if ((average / float(child->children.size()))  > max_mobility) {
                 max_mobility = average / float(child->children.size());
                 max_node = &child; 
+                child->h_value(30);
             }
         }
     }
@@ -109,6 +110,7 @@ child_ptr blocking_h(Reversi2& game_in) {
         if (child->children.size() < min_mobility) {
             min_mobility = child->children.size();
             min_node = &child;
+            child->h_value(20);
         }
     }
 
@@ -134,6 +136,7 @@ child_ptr capture_h(Reversi2& game_in) {
         if (total > max_total) {
             max_total = child->children.size();
             max_node = &child;
+            child->h_value(5);
         }
     }
 
@@ -153,6 +156,7 @@ child_ptr corner_h(Reversi2& game_in) {
     for (auto& child : head->children) {
         for (auto corner_space : {0, 7, 56, 63}) {
             if ((child->board.at(corner_space) == player) && (child->board.at(corner_space) == player)) {
+                child->h_value(500);
                 return &child;
             }
         }
@@ -163,3 +167,32 @@ child_ptr corner_h(Reversi2& game_in) {
 }
 
 child_ptr stability_h(Reversi2&);
+
+/* use a bunch of h functions ranked */
+child_ptr combo_h(Reversi2& game_in) {
+    auto head = game_in.get_head();
+    uint max_value = 0;
+    uint value = 0;
+    child_ptr max_node = nullptr;
+
+    mobility_h(game_in);
+    blocking_h(game_in);
+    capture_h(game_in);
+    corner_h(game_in);
+    
+    for (auto& child : head->children) {
+        value = child->h_value();
+        if (value > max_value) {
+            max_value = child->children.size();
+            max_node = &child;
+        }
+    }
+
+    if (max_node == nullptr) {
+        //nothing had anything of value at all
+        //so pick a random move
+        return random_h(game_in);
+    }
+    
+    return max_node;
+}
