@@ -1,11 +1,65 @@
 #include "reversi.h"
 
-//Assumes it is player 1, ie game.winner() = 1 -> it won
-// std::pair<int,int> betterAI (reversi game_og){
-//     cout << "to be implemented" << endl;
 
-//     return
-// }
+//Assumes it is player 1, ie game.winner() = 1 -> it won
+std::pair<int,int> betterAI (reversi game_og){
+    
+    std::vector<std::pair<int,int>> p_moves_og = game_og.possible_moves();
+
+    //no moves
+    if ( p_moves_og.size() == 0){
+        return make_pair(-1,-1);
+    }
+
+    std::vector<std::pair<int,int>> p_moves;
+    int num_playouts = 50;
+    vector<int> wins;
+    int x,y,rand_i;
+
+    reversi game_pm,game;
+    //perfrom posible move then playout
+    for(int i = 0; i < p_moves_og.size(); i++){
+        game_pm = game_og;
+        game_pm.make_move(p_moves_og[i].first, p_moves_og[i].second);
+        wins.push_back(0);
+
+        //play out game
+        for (int n = 0; n < num_playouts; n++){
+            game = game_pm;
+            while(!game.game_done()){
+                p_moves = game.possible_moves();
+                if(p_moves.size()==0){
+                    game.skip_turn();
+                } else {
+
+                    rand_i = rand() % p_moves.size();
+                    y = p_moves[rand_i].first;
+                    x = p_moves[rand_i].second;
+
+                    game.make_move(y,x);
+                }
+            }
+            if (game.winner() == 1){
+                 wins[i] += 1;
+            }
+        }
+       
+    }
+
+    //choose max wins
+    int max = 0;
+    int i_max = 0;
+    for(int i = 0; i < p_moves_og.size(); i++){
+        if(wins[i] > max){
+            max = wins[i];
+            i_max = i;
+        }
+    }
+
+    cout << "Agent 1 move wins: " << wins[i_max] << endl;
+    return p_moves_og[i_max];
+
+}
 
 //Assumes it is player 2
 std::pair<int,int> pMCTS (reversi game_og){
@@ -18,19 +72,20 @@ std::pair<int,int> pMCTS (reversi game_og){
     }
 
     std::vector<std::pair<int,int>> p_moves;
-    int num_playouts = 1000;
+    int num_playouts = 10;
     vector<int> wins;
     int x,y,rand_i;
 
-    reversi game;
+    reversi game_pm,game;
     //perfrom posible move then playout
     for(int i = 0; i < p_moves_og.size(); i++){
-        game = game_og;
-        game.make_move(p_moves_og[i].first, p_moves_og[i].second);
+        game_pm = game_og;
+        game_pm.make_move(p_moves_og[i].first, p_moves_og[i].second);
         wins.push_back(0);
 
         //play out game
         for (int n = 0; n < num_playouts; n++){
+            game = game_pm;
             while(!game.game_done()){
                 p_moves = game.possible_moves();
                 if(p_moves.size()==0){
@@ -61,6 +116,7 @@ std::pair<int,int> pMCTS (reversi game_og){
         }
     }
 
+    cout << "Agent 2 move wins: " << wins[i_max] << endl;
     return p_moves_og[i_max];
 
 }
@@ -78,18 +134,27 @@ int main(){
     while(!game.game_done()){    
         game.print(); 
 
-        //Agent 1 - random 
-        p_moves = game.possible_moves();
-        if(p_moves.size()==0){
+        //Agent 1 - betterAI 
+        move_A1 = betterAI(game);
+        y = move_A1.first;
+        x = move_A1.second; 
+        if (x < 0 || y < 0){
             game.skip_turn();
-        } else {
-
-            rand_i = rand() % p_moves.size();
-            y = p_moves[rand_i].first;
-            x = p_moves[rand_i].second;
-
+        }else{
             game.make_move(y,x);
-        }
+        } 
+
+        // p_moves = game.possible_moves();
+        // if(p_moves.size()==0){
+        //     game.skip_turn();
+        // } else {
+
+        //     rand_i = rand() % p_moves.size();
+        //     y = p_moves[rand_i].first;
+        //     x = p_moves[rand_i].second;
+
+        //     game.make_move(y,x);
+        // }
 
         //Agent 2 - pMCTS
         move_A2 = pMCTS(game);

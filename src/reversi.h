@@ -25,11 +25,16 @@ class reversi {
     void skip_turn();
     void print();
     int winner();
+    double get_heuristic();
 
     private:
 
     bool valid_move(int,int);
     std::vector<std::pair<std::pair<int,int>,int>> find_rows(int,int);
+    double h_parity();
+    double h_mobilty();
+    double h_corners();
+    double h_stabilty();
 
 };
 
@@ -110,7 +115,7 @@ void reversi::print(){
  void reversi::skip_turn(){
     std::vector<std::pair<int,int>> moves = possible_moves();
     assert(moves.size()==0);
-    
+
     turn = turn % 2 + 1;
 
  }
@@ -235,3 +240,39 @@ int reversi::winner(){
         return 0;
     }
 }
+
+
+//returns heuristic value for current player
+double reversi::get_heuristic(){
+//https://kartikkukreja.wordpress.com/2013/03/30/heuristic-function-for-reversiothello/
+    
+    return h_parity();
+    
+}
+
+double reversi::h_parity(){
+    
+    //count coins
+    int one = 0;
+    int two = 0;
+    for (int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            if(board[i][j]==1){
+                one ++;
+            }else if (board[i][j]==2){
+                two ++;
+            }
+        }
+    }
+    
+    if(turn == 1){
+        return 100*(one - two)/(one + two);
+    } else {
+        return 100*(two - one)/(one + two);
+    }
+    
+}
+
+double reversi::h_mobilty(){return 0;}
+double reversi::h_corners(){return 0;}
+double reversi::h_stabilty(){return 0;}
