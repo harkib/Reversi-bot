@@ -1,7 +1,7 @@
 #include "reversi.h"
 
 
-//Assumes it is player 1, ie game.winner() = 1 -> it won
+//Assumes it is player 1
 std::pair<int,int> betterAI (reversi game_og){
     
     std::vector<std::pair<int,int>> p_moves_og = game_og.possible_moves();
@@ -11,13 +11,14 @@ std::pair<int,int> betterAI (reversi game_og){
         return make_pair(-1,-1);
     }
 
-    std::vector<std::pair<int,int>> p_moves;
-    int num_playouts = 50;
+    std::vector<std::pair<int,int>> p_moves, p_moves_h;
     vector<int> wins;
-    int x,y,rand_i;
+    int num_playouts = 1;
+    int x,y,h_i;
+    double h_max,h;
 
-    reversi game_pm,game;
-    //perfrom posible move then playout
+    reversi game_pm,game,game_h;
+    //perfrom posible moves 
     for(int i = 0; i < p_moves_og.size(); i++){
         game_pm = game_og;
         game_pm.make_move(p_moves_og[i].first, p_moves_og[i].second);
@@ -32,10 +33,23 @@ std::pair<int,int> betterAI (reversi game_og){
                     game.skip_turn();
                 } else {
 
-                    rand_i = rand() % p_moves.size();
-                    y = p_moves[rand_i].first;
-                    x = p_moves[rand_i].second;
+                    //pick larget heuristic move
+                    h_max = -9999; //need to fix
+                    h_i = 0;
+                    for (int k= 0; k< p_moves.size(); k++){
+                        game_h = game;
+                        y = p_moves[k].first;
+                        x = p_moves[k].second;
+                        game_h.make_move(y,x);
+                        h = game_h.get_heuristic();
+                        if (h > h_max){
+                            h_max = h;
+                            h_i = k;
+                        }
+                    }
 
+                    y = p_moves[h_i].first;
+                    x = p_moves[h_i].second;
                     game.make_move(y,x);
                 }
             }
