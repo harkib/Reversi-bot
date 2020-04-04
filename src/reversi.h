@@ -26,7 +26,7 @@ class reversi {
     void print();
     int winner();
     double get_heuristic();
-
+    double get_h_bound();
     private:
 
     bool valid_move(int,int);
@@ -242,13 +242,16 @@ int reversi::winner(){
 }
 
 
-//returns heuristic value for current player
+//returns heuristic value
+//1 = player 1 (B) = Maximizing, 2 = player 2 (W) = minimixing
 double reversi::get_heuristic(){
 //https://kartikkukreja.wordpress.com/2013/03/30/heuristic-function-for-reversiothello/
-    
-    return h_parity();
+    int p = 1;
+    int c = 10;
+    return (p*h_parity() + c*h_corners())/(c+p);
     
 }
+
 
 double reversi::h_parity(){
     
@@ -265,14 +268,48 @@ double reversi::h_parity(){
         }
     }
     
-    if(turn == 1){
-        return 100*(one - two)/(one + two);
-    } else {
-        return 100*(two - one)/(one + two);
-    }
-    
+    return 100*(one - two)/(one + two);
+  
 }
 
 double reversi::h_mobilty(){return 0;}
-double reversi::h_corners(){return 0;}
+
+
+double reversi::h_corners(){
+    //https://guides.net4tv.com/games/how-win-reversi
+    int one = 0;
+    int two = 0;
+    int true_corner_val = 10;
+    vector <int> cord_x = {0,2,5,7};
+    vector <int> cord_y = {0,2,5,7};
+
+    for(int i = 0; i < cord_x.size(); i++){
+        for(int j = 0; j < cord_x.size(); j++){
+            if(board[cord_y[j]][cord_x[i]] == 1){
+                if((cord_y[j] == 7 || cord_y[j] == 0) && (cord_x[i] == 7 || cord_x[i] == 0)){
+                    one += true_corner_val;
+                } else {
+                    one ++;
+                }
+            }else if (board[cord_y[j]][cord_x[i]]==2){
+                if((cord_y[j] == 7 || cord_y[j] == 0) && (cord_x[i] == 7 || cord_x[i] == 0)){
+                    two += true_corner_val;
+                } else {
+                    two ++;
+                }
+            }
+        }    
+    }
+    if (one == 0 && two == 0){
+        return 0;
+    } else {
+        return 100*(one - two)/(one + two);
+    }
+}
+
 double reversi::h_stabilty(){return 0;}
+
+//returns upper bound of heuristic, lower bound = - upper bound
+double reversi::get_h_bound(){
+    return 100;
+}

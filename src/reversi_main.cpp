@@ -1,7 +1,58 @@
 #include "reversi.h"
 
 
+//returns max or min heuristic after searching given depth using minmax
+double minmax(reversi game_og, int depth, bool maximizing_player){
+
+    //terminatation node
+    if(depth == 0 || game_og.game_done()){
+        return game_og.get_heuristic();
+    }
+
+    //generate all childern (moves)
+    std::vector<std::pair<int,int>> p_moves_og = game_og.possible_moves();
+    
+    //no childern, terminate 
+    if ( p_moves_og.size() == 0){
+        return game_og.get_heuristic();
+    }
+
+    //generate all childern (games)
+    reversi game;
+    std::vector<reversi> p_games; 
+    for(int i = 0; i <p_moves_og.size(); i++){
+        game = game_og;
+        game.make_move(p_moves_og[i].first,p_moves_og[i].second);
+        p_games.push_back(game);
+    }
+
+    //get max/min of childern
+    double max_h = -game_og.get_h_bound();
+    double min_h =  game_og.get_h_bound();
+    double h_child;
+    if(maximizing_player){
+        for(int i = 0; i < p_games.size(); i++){
+            h_child = minmax(p_games[i],depth -1, !maximizing_player);
+            if(h_child > max_h){
+                max_h = h_child;
+            }
+        }
+        return max_h;
+    }else {
+        for(int i = 0; i < p_games.size(); i++){
+            h_child = minmax(p_games[i],depth -1, !maximizing_player);
+            if(h_child < min_h){
+                min_h = h_child;
+            }
+        }
+        return min_h;
+    }
+    
+
+}
+
 //Assumes it is player 1
+//heuristic assuming 1 = player 1 (B) = Maximizing, 2 = player 2 (W) = minimixing 
 std::pair<int,int> betterAI (reversi game_og){
     
     std::vector<std::pair<int,int>> p_moves_og = game_og.possible_moves();
@@ -11,66 +62,26 @@ std::pair<int,int> betterAI (reversi game_og){
         return make_pair(-1,-1);
     }
 
-    std::vector<std::pair<int,int>> p_moves, p_moves_h;
-    vector<int> wins;
-    int num_playouts = 1;
-    int x,y,h_i;
-    double h_max,h;
-
-    reversi game_pm,game,game_h;
-    //perfrom posible moves 
+    //run minmax on all possible moves
+    std::vector<double> h_vals;
+    reversi game;   
     for(int i = 0; i < p_moves_og.size(); i++){
-        game_pm = game_og;
-        game_pm.make_move(p_moves_og[i].first, p_moves_og[i].second);
-        wins.push_back(0);
-
-        //play out game
-        for (int n = 0; n < num_playouts; n++){
-            game = game_pm;
-            while(!game.game_done()){
-                p_moves = game.possible_moves();
-                if(p_moves.size()==0){
-                    game.skip_turn();
-                } else {
-
-                    //pick larget heuristic move
-                    h_max = -9999; //need to fix
-                    h_i = 0;
-                    for (int k= 0; k< p_moves.size(); k++){
-                        game_h = game;
-                        y = p_moves[k].first;
-                        x = p_moves[k].second;
-                        game_h.make_move(y,x);
-                        h = game_h.get_heuristic();
-                        if (h > h_max){
-                            h_max = h;
-                            h_i = k;
-                        }
-                    }
-
-                    y = p_moves[h_i].first;
-                    x = p_moves[h_i].second;
-                    game.make_move(y,x);
-                }
-            }
-            if (game.winner() == 1){
-                 wins[i] += 1;
-            }
-        }
-       
+        game = game_og;
+        game.make_move(p_moves_og[i].first, p_moves_og[i].second);
+        h_vals.push_back(minmax(game, 4, false)); //seems to do better when minmax finishes on agent 1 ie depth is even
     }
 
-    //choose max wins
-    int max = 0;
+    //choose max h  
+    int max_h = -game_og.get_h_bound();
     int i_max = 0;
     for(int i = 0; i < p_moves_og.size(); i++){
-        if(wins[i] > max){
-            max = wins[i];
+        if(h_vals[i] > max_h){
+            max_h = h_vals[i];
             i_max = i;
         }
     }
 
-    cout << "Agent 1 move wins: " << wins[i_max] << endl;
+    cout << "Agent 1 move h: " << h_vals[i_max] << endl;
     return p_moves_og[i_max];
 
 }
@@ -86,7 +97,7 @@ std::pair<int,int> pMCTS (reversi game_og){
     }
 
     std::vector<std::pair<int,int>> p_moves;
-    int num_playouts = 10;
+    int num_playouts = 50;
     vector<int> wins;
     int x,y,rand_i;
 
@@ -130,7 +141,7 @@ std::pair<int,int> pMCTS (reversi game_og){
         }
     }
 
-    cout << "Agent 2 move wins: " << wins[i_max] << endl;
+    cout << "Agent 2 move wins %: " << 100*(float)wins[i_max]/num_playouts << endl;
     return p_moves_og[i_max];
 
 }
