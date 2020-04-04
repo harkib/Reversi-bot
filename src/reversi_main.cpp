@@ -6,15 +6,14 @@
 #include <iostream>
 
 int main(){
-    std::function<Reversi2::action_t(Reversi2& game_in)> random_f = random_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> mobility_f = mobility_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> capture_f = capture_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> corner_f = corner_h;
-    //std::function<Reversi2::action_t(Reversi2& game_in)> stability_f = stability_h;
-    std::function<Reversi2::action_t(Reversi2& game_in)> blocking_f = blocking_h;
+    std::function<child_ptr(Reversi2& game_in)> random_f = random_h;
+    std::function<child_ptr(Reversi2& game_in)> mobility_f = mobility_h;
+    std::function<child_ptr(Reversi2& game_in)> capture_f = capture_h;
+    std::function<child_ptr(Reversi2& game_in)> corner_f = corner_h;
+    //std::function<child_ptr(Reversi2& game_in)> stability_f = stability_h;
+    std::function<child_ptr(Reversi2& game_in)> blocking_f = blocking_h;
 
     auto game = Reversi2();
-    auto action = Reversi2::action_t{0,0};
 
     while (!game.goal_test()) {
         game.print();
@@ -24,11 +23,10 @@ int main(){
             game.skip_turn();
         } else {
             if (((game.get_head()->turn) % 2) == 0) {
-                action = monte_carlo(game, corner_f); //player B
+                game.do_turn(monte_carlo(game, corner_f)); //player B
             } else {
-                action = monte_carlo(game, random_f); //player W
+                game.do_turn(monte_carlo(game, random_f)); //player W
             }
-            game.do_turn(action);
         }
     }
     std::cout << "GAME OVER" << std::endl << game.winner() << " wins!" << std::endl;

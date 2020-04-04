@@ -6,8 +6,9 @@
 #include "algorithim.h"
 #include "Reversi2.h"
 
-Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::action_t(Reversi2&)> hueristic) {
+child_ptr monte_carlo(const Reversi2& game_in, std::function<child_ptr(Reversi2&)> hueristic) {
     typedef std::chrono::system_clock clock;
+
     const auto choices = game_in.actions();
     const auto num_choices = choices.size();
     const uint max_playouts = 5000 / num_choices;
@@ -25,7 +26,7 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
             game.do_turn(choice);
             while(!game.goal_test()) {
                 game.expand_children();
-                if (game.get_head()->children.size() == 0) {
+                if (game.get_head()->children.empty()) {
                     game.skip_turn();
                 } else {
                     auto next_action = hueristic(game);
@@ -49,31 +50,28 @@ Reversi2::action_t monte_carlo(const Reversi2& game_in, std::function<Reversi2::
     }
     std::cout << "Player " << player << " considered " << (n*num_choices) << " playouts" << std::endl;
 
-    return choices.at(i_max);
+    return &(game_in.get_head()->children.at(i_max));
 }
 
 
 /* HEURTISTIC FUNCTIONS
-   accepts the current game and returns the best move accoring to it's own ideas
+   accepts the current game and returns the best child accoring to it's own ideas
    it is assumed that at least one level of children have been expanded
 */
 
 /* just makes random moves */
-Reversi2::action_t random_h(Reversi2& game_in) {  
+child_ptr random_h(Reversi2& game_in) {  
     auto head = game_in.get_head();
     auto rand_i = rand() % head->children.size(); //apparently not a good random element method but w/e
-    auto node_action = head->children.at(rand_i)->action;
-    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
-
-    return action;
+    return &(head->children.at(rand_i));
 }
 
 /* finds what move leads to the maximum number of availible moves next turn.
    uses the average from all possible opponent moves. */
-Reversi2::action_t mobility_h(Reversi2& game_in) {
+child_ptr mobility_h(Reversi2& game_in) {
     auto head = game_in.get_head();
     float max_mobility = 0;
-    Node* max_node = nullptr;
+    child_ptr max_node = nullptr;
     float average = 0;
 
     for (auto& child : head->children) {
@@ -86,7 +84,7 @@ Reversi2::action_t mobility_h(Reversi2& game_in) {
         if (!child->children.empty()) {
             if ((average / float(child->children.size()))  > max_mobility) {
                 max_mobility = average / float(child->children.size());
-                max_node = child.get(); 
+                max_node = &child; 
             }
         }
     }
@@ -97,22 +95,20 @@ Reversi2::action_t mobility_h(Reversi2& game_in) {
         return random_h(game_in);
     }
 
-    auto node_action = max_node->action;
-    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
-    return action;
+    return max_node;
 }
 
 /* makes moves that result in the fewest moves for the opponent */
-Reversi2::action_t blocking_h(Reversi2& game_in) {
+child_ptr blocking_h(Reversi2& game_in) {
     auto head = game_in.get_head();
     uint min_mobility = 64;
-    Node* min_node = nullptr;
+    child_ptr min_node = nullptr;
 
     for (auto& child : head->children) {
         game_in.expand_children(*child);
         if (child->children.size() < min_mobility) {
             min_mobility = child->children.size();
-            min_node = child.get();
+            min_node = &child;
         }
     }
 
@@ -122,24 +118,22 @@ Reversi2::action_t blocking_h(Reversi2& game_in) {
         return random_h(game_in);
     }
     
-    auto node_action = min_node->action;
-    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
-    return action;
+    return min_node;
 }
 
 /* trys to have as many tiles on the board as possible */
-Reversi2::action_t capture_h(Reversi2& game_in) {
+child_ptr capture_h(Reversi2& game_in) {
     auto head = game_in.get_head();
     auto player = game_in.whos_turn();
     uint max_total = std::count(std::begin(head->board), std::end(head->board), player);
     uint total = 0;
-    Node* max_node = nullptr;
+    child_ptr max_node = nullptr;
 
     for (auto& child : head->children) {
         total = std::count(std::begin(child->board), std::end(child->board), player);
         if (total > max_total) {
             max_total = child->children.size();
-            max_node = child.get();
+            max_node = &child;
         }
     }
 
@@ -149,26 +143,23 @@ Reversi2::action_t capture_h(Reversi2& game_in) {
         return random_h(game_in);
     }
     
-    auto node_action = max_node->action;
-    auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
-    return action;
+    return max_node;
 }
 
-Reversi2::action_t corner_h(Reversi2& game_in) {
+child_ptr corner_h(Reversi2& game_in) {
     auto head = game_in.get_head();
+    auto player = game_in.whos_turn();
 
     for (auto& child : head->children) {
         for (auto corner_space : {0, 7, 56, 63}) {
-            if (child->action.new_space == corner_space) {
-                auto node_action = child.get()->action;
-                auto action = Reversi2::action_t{node_action.new_space, node_action.old_space};
-                return action;
+            if ((child->board.at(corner_space) == player) && (child->board.at(corner_space) == player)) {
+                return &child;
             }
         }
     }
 
     //nothing is a corner so pick a random move
-    return random_h(game_in);    
+    return random_h(game_in);   
 }
 
-Reversi2::action_t stability_h(Reversi2&);
+child_ptr stability_h(Reversi2&);

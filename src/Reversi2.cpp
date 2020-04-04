@@ -153,25 +153,26 @@ void Reversi2::expand_children() {
 void Reversi2::expand_children(Node& node) {
     auto new_boards = std::vector<board_t>{};
     auto moves = actions(node);
-    auto moves_new = std::vector<int8_t>{}; //what a horrible way to do this but sharing typedefs is just not working.. D:
-    auto moves_old = std::vector<int8_t>{};
 
     for (auto move : moves) {
         new_boards.push_back(result(head->board, move));
-        moves_new.push_back(move.new_space);
-        moves_old.push_back(move.old_space);
     }
 
-    node.expand(new_boards, moves_new, moves_old);
+    node.expand(new_boards);
 }
 
-void Reversi2::do_turn(Reversi2::action_t move) {
-    head.reset(new Node(result(head->board, move), {move.new_space, move.old_space}, (head->turn+1), false)); //lol the action_t bit is so bad
+void Reversi2::do_turn(Reversi2::action_t move) { //TODO this could speed 
+    head.reset(new Node(result(head->board, move), (head->turn+1), false)); //lol the action_t bit is so bad
     //print();
 }
 
+Node* Reversi2::do_turn(std::unique_ptr<Node>* child) { 
+    head = std::move(*child);
+    return head.get();
+}
+
 void Reversi2::skip_turn() {
-    head.reset(new Node(head->board, {-1, -1}, (head->turn+1), true));
+    head.reset(new Node(head->board, (head->turn+1), true));
     //print();
 }
 

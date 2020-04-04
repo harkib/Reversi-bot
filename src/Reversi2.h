@@ -35,6 +35,7 @@ class Reversi2 {
         std::vector<action_t> actions() const;
         
         void do_turn(action_t);
+        Node* do_turn(std::unique_ptr<Node>*);
         void skip_turn();
         
         bool goal_test() const; //TODO make private after tests
