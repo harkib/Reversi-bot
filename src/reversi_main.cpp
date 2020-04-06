@@ -1,4 +1,6 @@
 #include "reversi.h"
+#include <cstdio>
+#include <ctime>
 
 
 //returns max or min heuristic after searching given depth using minmax
@@ -51,6 +53,67 @@ double minmax(reversi game_og, int depth, bool maximizing_player){
 
 }
 
+//returns max or min heuristic after searching given depth using minmax with alphabeta pruning
+double minmax_alphabeta(reversi game_og, int depth, bool maximizing_player, double alpha, double beta){
+
+    //terminatation node
+    if(depth == 0 || game_og.game_done()){
+        return game_og.get_heuristic();
+    }
+
+    //generate all childern (moves)
+    std::vector<std::pair<int,int>> p_moves_og = game_og.possible_moves();
+    
+    //no childern, terminate 
+    if ( p_moves_og.size() == 0){
+        return game_og.get_heuristic();
+    }
+
+    //generate all childern (games)
+    reversi game;
+    std::vector<reversi> p_games; 
+    for(int i = 0; i <p_moves_og.size(); i++){
+        game = game_og;
+        game.make_move(p_moves_og[i].first,p_moves_og[i].second);
+        p_games.push_back(game);
+    }
+
+    //get max/min of childern
+    double max_h = -game_og.get_h_bound();
+    double min_h =  game_og.get_h_bound();
+    double h_child;
+    if(maximizing_player){
+        for(int i = 0; i < p_games.size(); i++){
+            h_child = minmax_alphabeta(p_games[i],depth -1, !maximizing_player, alpha, beta);
+            if(h_child > max_h){
+                max_h = h_child;
+            }
+            if(h_child > alpha){
+                alpha = h_child;
+            }
+            if(alpha >= beta){
+                break;
+            }
+        }
+        return max_h;
+    }else {
+        for(int i = 0; i < p_games.size(); i++){
+            h_child = minmax_alphabeta(p_games[i],depth -1, !maximizing_player, alpha, beta);
+            if(h_child < min_h){
+                min_h = h_child;
+            }
+            if(h_child < beta){
+                beta = h_child;
+            }
+            if(alpha >= beta){
+                break;
+            }
+        }
+        return min_h;
+    }
+    
+}
+
 //Assumes it is player 1
 //heuristic assuming 1 = player 1 (B) = Maximizing, 2 = player 2 (W) = minimixing 
 std::pair<int,int> betterAI (reversi game_og){
@@ -68,7 +131,7 @@ std::pair<int,int> betterAI (reversi game_og){
     for(int i = 0; i < p_moves_og.size(); i++){
         game = game_og;
         game.make_move(p_moves_og[i].first, p_moves_og[i].second);
-        h_vals.push_back(minmax(game, 4, false)); //seems to do better when minmax finishes on agent 1 ie depth is even
+        h_vals.push_back(minmax_alphabeta(game, 5, false,-game.get_h_bound(),game.get_h_bound())); //seems to do better when minmax finishes on agent 1 ie depth is even
     }
 
     //choose max h  
@@ -97,7 +160,7 @@ std::pair<int,int> pMCTS (reversi game_og){
     }
 
     std::vector<std::pair<int,int>> p_moves;
-    int num_playouts = 50;
+    int num_playouts = 100;
     vector<int> wins;
     int x,y,rand_i;
 
@@ -148,7 +211,13 @@ std::pair<int,int> pMCTS (reversi game_og){
  
 
 int main(){
-   
+    std::clock_t start;
+    double duration;
+    double A1_total_time = 0;
+    double A2_total_time = 0;
+    int A1_total_moves = 0;
+    int A2_total_moves = 0;
+
     reversi game;
     int y,x, rand_i;  
     pair<int,int> move_A1; 
@@ -160,34 +229,32 @@ int main(){
         game.print(); 
 
         //Agent 1 - betterAI 
+        start = std::clock();
         move_A1 = betterAI(game);
+        duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        cout<< "Time taken (s): "<< duration <<endl;
         y = move_A1.first;
         x = move_A1.second; 
         if (x < 0 || y < 0){
             game.skip_turn();
         }else{
+            A1_total_time += duration;
+            A1_total_moves ++;
             game.make_move(y,x);
         } 
 
-        // p_moves = game.possible_moves();
-        // if(p_moves.size()==0){
-        //     game.skip_turn();
-        // } else {
-
-        //     rand_i = rand() % p_moves.size();
-        //     y = p_moves[rand_i].first;
-        //     x = p_moves[rand_i].second;
-
-        //     game.make_move(y,x);
-        // }
-
         //Agent 2 - pMCTS
+        start = std::clock();
         move_A2 = pMCTS(game);
+        duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        cout<< "Time taken (s): "<< duration <<endl;
         y = move_A2.first;
         x = move_A2.second; 
         if (x < 0 || y < 0){
             game.skip_turn();
         }else{
+            A2_total_time += duration;
+            A2_total_moves ++;
             game.make_move(y,x);
         } 
     }   
@@ -195,5 +262,7 @@ int main(){
     game.print(); 
     int winner = game.winner();
     cout << "winner: Agent " << winner << endl;
+    cout << "Agnet 1 average time (s): " << A1_total_time/A1_total_moves<< endl;
+    cout << "Agnet 2 average time (s): " << A2_total_time/A2_total_moves<< endl;
     return 0;
 }   
