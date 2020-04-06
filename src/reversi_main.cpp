@@ -122,7 +122,7 @@ std::pair<int,int> betterAI (reversi game_og){
 
     //no moves
     if ( p_moves_og.size() == 0){
-        return make_pair(-1,-1);
+        return std::make_pair(-1,-1);
     }
 
     //run minmax on all possible moves
@@ -144,7 +144,7 @@ std::pair<int,int> betterAI (reversi game_og){
         }
     }
 
-    cout << "Agent 1 move h: " << h_vals[i_max] << endl;
+    std::cout << "Agent 1 move h: " << h_vals[i_max] << std::endl;
     return p_moves_og[i_max];
 
 }
@@ -156,12 +156,12 @@ std::pair<int,int> pMCTS (reversi game_og){
 
     //no moves
     if ( p_moves_og.size() == 0){
-        return make_pair(-1,-1);
+        return std::make_pair(-1,-1);
     }
 
     std::vector<std::pair<int,int>> p_moves;
     int num_playouts = 100;
-    vector<int> wins;
+    std::vector<int> wins;
     int x,y,rand_i;
 
     reversi game_pm,game;
@@ -204,7 +204,7 @@ std::pair<int,int> pMCTS (reversi game_og){
         }
     }
 
-    cout << "Agent 2 move wins %: " << 100*(float)wins[i_max]/num_playouts << endl;
+    std::cout << "Agent 2 move wins %: " << 100*(float)wins[i_max]/num_playouts << std::endl;
     return p_moves_og[i_max];
 
 }
@@ -220,8 +220,8 @@ int main(){
 
     reversi game;
     int y,x, rand_i;  
-    pair<int,int> move_A1; 
-    pair<int,int> move_A2;
+    std::pair<int,int> move_A1; 
+    std::pair<int,int> move_A2;
     std::vector<std::pair<int,int>> p_moves;
 
     //random move vs pMCTS, use negative index to skip if no moves 
@@ -232,7 +232,7 @@ int main(){
         start = std::clock();
         move_A1 = betterAI(game);
         duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        cout<< "Time taken (s): "<< duration <<endl;
+        std::cout << "Time taken (s): "<< duration << std::endl;
         y = move_A1.first;
         x = move_A1.second; 
         if (x < 0 || y < 0){
@@ -247,7 +247,7 @@ int main(){
         start = std::clock();
         move_A2 = pMCTS(game);
         duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        cout<< "Time taken (s): "<< duration <<endl;
+        std::cout << "Time taken (s): " << duration << std::endl;
         y = move_A2.first;
         x = move_A2.second; 
         if (x < 0 || y < 0){
@@ -261,8 +261,8 @@ int main(){
 
     game.print(); 
     int winner = game.winner();
-    cout << "winner: Agent " << winner << endl;
-    cout << "Agnet 1 average time (s): " << A1_total_time/A1_total_moves<< endl;
-    cout << "Agnet 2 average time (s): " << A2_total_time/A2_total_moves<< endl;
+    std::cout << "winner: Agent " << winner << std::endl;
+    std::cout << "Agnet 1 average time (s): " << A1_total_time/A1_total_moves << std::endl;
+    std::cout << "Agnet 2 average time (s): " << A2_total_time/A2_total_moves<< std::endl;
     return 0;
 }   

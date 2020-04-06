@@ -3,9 +3,9 @@
 #include <iostream>
 #include <assert.h> 
 #include <utility>
-using namespace std;
 
-#pragma once 
+#ifndef __reversi_h
+#define __reversi_h
 
 class reversi {
 
@@ -15,33 +15,32 @@ class reversi {
     int turn = 1; //1 or 2
 
     public:
+        reversi();
+        //reversi(int);
+        
+        std::vector<std::pair<int,int>> possible_moves();
+        bool game_done();
+        void make_move (int,int);
+        void skip_turn();
+        void print();
+        int winner();
+        double get_heuristic();
+        double get_h_bound();
 
-    reversi();
-    //reversi(int);
-    
-    std::vector<std::pair<int,int>> possible_moves();
-    bool game_done();
-    void make_move (int,int);
-    void skip_turn();
-    void print();
-    int winner();
-    double get_heuristic();
-    double get_h_bound();
     private:
-
-    bool valid_move(int,int);
-    std::vector<std::pair<std::pair<int,int>,int>> find_rows(int,int);
-    double h_parity();
-    double h_mobilty();
-    double h_corners();
-    double h_stabilty();
+        bool valid_move(int,int);
+        std::vector<std::pair<std::pair<int,int>,int>> find_rows(int,int);
+        double h_parity();
+        double h_mobilty();
+        double h_corners();
+        double h_stabilty();
 
 };
 
 reversi::reversi(){ 
 
     //8 x 8 matrix of zeros
-    vector<int> row = {0,0,0,0,0,0,0,0};
+    std::vector<int> row = {0,0,0,0,0,0,0,0};
     for(int j = 0; j < 8; j++){
         board.push_back(row);
     }
@@ -66,43 +65,43 @@ reversi::reversi(){
 void reversi::print(){
 
     for (int i = 0; i < 8; i++){
-        cout << i << ":";
+        std::cout << i << ":";
         for(int j = 0; j < 8; j++){
 
             if (board[i][j] == 0){
-                cout << " ";
+                std::cout << " ";
             } else if  (board[i][j] == 1){
-                cout << "B";
+                std::cout << "B";
             } else if  (board[i][j] == 2){
-                cout << "W";
+                std::cout << "W";
             }
 
             if( j < 7){
-                cout << "|";
+                std::cout << "|";
             }
-
         }
 
-        cout << endl;
+        std::cout << std::endl;
 
         if(i < 7){
-            cout <<"-----------------" <<endl;
+            std::cout <<"-----------------" << std::endl;
         }
     }
 
-    cout << "  ";
+    std::cout << "  ";
     for (int i = 0; i < 8; i++){
-        cout << i << " ";
-    } cout << endl << endl;
+        std::cout << i << " ";
+    } 
+    std::cout << std::endl << std::endl;
 }
 
 //returns vector of possible moves, (y,x)
- std::vector<std::pair<int,int>> reversi::possible_moves(){
+std::vector<std::pair<int,int>> reversi::possible_moves(){
     std::vector<std::pair<int,int>> moves;
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             if(valid_move(i,j)){
-                moves.push_back(make_pair(i,j));
+                moves.push_back(std::make_pair(i,j));
             }
         }
     }
@@ -112,7 +111,7 @@ void reversi::print(){
 
 //skips turn
 //assert: no moves for current player
- void reversi::skip_turn(){
+void reversi::skip_turn(){
     std::vector<std::pair<int,int>> moves = possible_moves();
     assert(moves.size()==0);
 
@@ -122,11 +121,10 @@ void reversi::print(){
 
 //makes move and updates board
 //assert: valid move
- void reversi::make_move (int move_y,int move_x){
+void reversi::make_move (int move_y,int move_x){
     assert(valid_move(move_y,move_x));
     
-    
-    //udate board
+    //update board
     std::vector<std::pair<std::pair<int,int>,int>> rows = find_rows(move_y,move_x);
     
     //update self
@@ -150,16 +148,16 @@ void reversi::print(){
  }
 
 //checks is move is valid by checking what rows would be captured
- bool reversi::valid_move(int move_y,int move_x){
-    vector<pair<pair<int,int>,int>> rows = find_rows(move_y,move_x);
+bool reversi::valid_move(int move_y,int move_x){
+    std::vector<std::pair<std::pair<int,int>,int>> rows = find_rows(move_y,move_x);
 
     return rows.size() > 0;
  }
 
 //retunrs rows that would be captured with move
 //inner pair repersent direction of row outer pair.second is length of row
-vector<pair<pair<int,int>,int>> reversi::find_rows(int move_y,int move_x){
-    vector<pair<pair<int,int>,int>> rows;
+std::vector<std::pair<std::pair<int,int>,int>> reversi::find_rows(int move_y,int move_x){
+    std::vector<std::pair<std::pair<int,int>,int>> rows;
 
     //check if empty 
     if(board[move_y][move_x] != 0){
@@ -189,7 +187,7 @@ vector<pair<pair<int,int>,int>> reversi::find_rows(int move_y,int move_x){
                     }
                 }
                 if (board[move_y+dy][move_x+dx]== turn && in_bounds && len != 0){
-                    rows.push_back(make_pair(make_pair(y,x), len ));
+                    rows.push_back(std::make_pair(std::make_pair(y,x), len ));
                 }
             }
         }
@@ -280,8 +278,8 @@ double reversi::h_corners(){
     int one = 0;
     int two = 0;
     int true_corner_val = 10;
-    vector <int> cord_x = {0,2,5,7};
-    vector <int> cord_y = {0,2,5,7};
+    std::vector <int> cord_x = {0,2,5,7};
+    std::vector <int> cord_y = {0,2,5,7};
 
     for(int i = 0; i < cord_x.size(); i++){
         for(int j = 0; j < cord_x.size(); j++){
@@ -313,3 +311,5 @@ double reversi::h_stabilty(){return 0;}
 double reversi::get_h_bound(){
     return 100;
 }
+
+#endif
