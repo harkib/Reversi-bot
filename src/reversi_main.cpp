@@ -160,7 +160,8 @@ std::pair<int,int> pMCTS (reversi game_og){
     }
 
     std::vector<std::pair<int,int>> p_moves;
-    int num_playouts = 100;
+    int num_playouts = 1000;
+    
     std::vector<int> wins;
     int x,y,rand_i;
 
@@ -217,6 +218,7 @@ int main(){
     double A2_total_time = 0;
     int A1_total_moves = 0;
     int A2_total_moves = 0;
+
 
     reversi game;
     int y,x, rand_i;  
